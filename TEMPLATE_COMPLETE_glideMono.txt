@@ -1,0 +1,1094 @@
+{ *
+*	Author: Ruslan Pantaev
+*	GNU Public License
+*	January 9, 2017
+*	www.R-P.ninja
+* }
+
+
+on init
+	{ ---- MAIN ---- }
+	message(" ")
+	set_script_title("arpiSeaQ_Main")
+	make_perfview
+	set_ui_height_px(540)
+	set_control_par_str($INST_WALLPAPER_ID,$CONTROL_PAR_PICTURE,"wallpaper_lines3_COMPLETE_glideMono")
+	set_control_par_str($INST_ICON_ID,$CONTROL_PAR_PICTURE,"pinguIcon")
+	{ lock_script(540, 1) }
+
+	declare $countKey
+	while ($countKey < 128)
+		set_key_color($countKey,$KEY_COLOR_BLACK)
+		inc($countKey)
+	end while
+
+	{ - MENU group presets Select - }
+	declare ui_menu $selected_group
+	declare $i
+	$i := 0
+	while ($i <= $NUM_GROUPS-1)
+		add_menu_item($selected_group, group_name($i), $i)
+		inc($i)
+	end while
+
+	declare ui_label $preset_label (3,1)
+	set_text ($preset_label,"Select Sound Source")
+	{ - MENU group presets Select end - }
+
+	{ ---- Declare var for AHDSR and LFO_MULTI---- }
+	declare $grp_idx
+	$grp_idx := 0
+
+	declare $env_idx
+	$env_idx := find_mod($grp_idx, "ENV_VOL")
+
+	declare $lfo_idx
+	$lfo_idx := find_mod($grp_idx, "LFO_MULTI")
+
+	{ - AHDSR - }
+		{ ---- Custom Attack Slider ---- }
+		declare ui_slider $Attack_sli(0, 1000000)
+		set_control_par_str(get_ui_id($Attack_sli),$CONTROL_PAR_AUTOMATION_NAME,"Attack")
+		set_knob_defval($Attack_sli,0)
+		set_control_par_str(get_ui_id($Attack_sli),$CONTROL_PAR_TEXT,"")
+		set_control_par_str(get_ui_id($Attack_sli),$CONTROL_PAR_PICTURE,"series1_Attack")
+		set_control_par(get_ui_id($Attack_sli),$CONTROL_PAR_MOUSE_BEHAVIOUR,-400)
+
+		$Attack_sli := get_engine_par($ENGINE_PAR_ATTACK,$grp_idx,$env_idx,-1)
+		set_control_par_str(get_ui_id($Attack_sli),$CONTROL_PAR_LABEL, get_engine_par_disp($ENGINE_PAR_ATTACK,$grp_idx,$env_idx,-1) & " ms")
+
+		make_persistent($Attack_sli)
+		read_persistent_var($Attack_sli)
+
+		{ ---- Custom Hold Slider ---- }
+		declare ui_slider $Hold_sli(0, 1000000)
+		set_control_par_str(get_ui_id($Hold_sli),$CONTROL_PAR_AUTOMATION_NAME,"Hold")
+		set_knob_defval($Hold_sli,1000000)
+		set_control_par_str(get_ui_id($Hold_sli),$CONTROL_PAR_TEXT,"")
+		set_control_par_str(get_ui_id($Hold_sli),$CONTROL_PAR_PICTURE,"series1_Hold")
+		set_control_par(get_ui_id($Hold_sli),$CONTROL_PAR_MOUSE_BEHAVIOUR,-400)
+
+		$Hold_sli := get_engine_par($ENGINE_PAR_HOLD,$grp_idx,$env_idx,-1)
+		set_control_par_str(get_ui_id($Hold_sli),$CONTROL_PAR_LABEL, get_engine_par_disp($ENGINE_PAR_HOLD,$grp_idx,$env_idx,-1) & " ms")
+
+		make_persistent($Hold_sli)
+		read_persistent_var($Hold_sli)
+
+		{ ---- Custom Decay Slider ---- }
+		declare ui_slider $Decay_sli(0, 1000000)
+		set_control_par_str(get_ui_id($Decay_sli),$CONTROL_PAR_AUTOMATION_NAME,"Decay")
+		set_knob_defval($Decay_sli,1000000)
+		set_control_par_str(get_ui_id($Decay_sli),$CONTROL_PAR_TEXT,"")
+		set_control_par_str(get_ui_id($Decay_sli),$CONTROL_PAR_PICTURE,"series1_Decay")
+		set_control_par(get_ui_id($Decay_sli),$CONTROL_PAR_MOUSE_BEHAVIOUR,-400)
+
+		$Decay_sli := get_engine_par($ENGINE_PAR_DECAY,$grp_idx,$env_idx,-1)
+		set_control_par_str(get_ui_id($Decay_sli),$CONTROL_PAR_LABEL, get_engine_par_disp($ENGINE_PAR_DECAY,$grp_idx,$env_idx,-1) & " ms")
+
+		make_persistent($Decay_sli)
+		read_persistent_var($Decay_sli)
+
+		{ ---- Custom Sustain Slider ---- }
+		declare ui_slider $Sustain_sli(0, 1000000)
+		set_control_par_str(get_ui_id($Sustain_sli),$CONTROL_PAR_AUTOMATION_NAME,"Sustain")
+		set_knob_defval($Sustain_sli,1000000)
+		set_control_par_str(get_ui_id($Sustain_sli),$CONTROL_PAR_TEXT,"")
+		set_control_par_str(get_ui_id($Sustain_sli),$CONTROL_PAR_PICTURE,"series1_Sustain")
+		set_control_par(get_ui_id($Sustain_sli),$CONTROL_PAR_MOUSE_BEHAVIOUR,-400)
+
+		$Sustain_sli := get_engine_par($ENGINE_PAR_SUSTAIN,$grp_idx,$env_idx,-1)
+		set_control_par_str(get_ui_id($Sustain_sli),$CONTROL_PAR_LABEL, get_engine_par_disp($ENGINE_PAR_SUSTAIN,$grp_idx,$env_idx,-1) & " dB")
+
+		make_persistent($Sustain_sli)
+		read_persistent_var($Sustain_sli)
+
+		{ ---- Custom Release Slider ---- }
+		declare ui_slider $Release_sli(0, 1000000)
+		set_control_par_str(get_ui_id($Release_sli),$CONTROL_PAR_AUTOMATION_NAME,"Release")
+		set_knob_defval($Release_sli,500000)
+		set_control_par_str(get_ui_id($Release_sli),$CONTROL_PAR_TEXT,"")
+		set_control_par_str(get_ui_id($Release_sli),$CONTROL_PAR_PICTURE,"series1_Release")
+		set_control_par(get_ui_id($Release_sli),$CONTROL_PAR_MOUSE_BEHAVIOUR,-400)
+
+		$Release_sli := get_engine_par($ENGINE_PAR_SUSTAIN,$grp_idx,$env_idx,-1)
+		set_control_par_str(get_ui_id($Sustain_sli),$CONTROL_PAR_LABEL, get_engine_par_disp($ENGINE_PAR_SUSTAIN,$grp_idx,$env_idx,-1) & " dB")
+
+		make_persistent($Release_sli)
+		read_persistent_var($Release_sli)
+	{ - AHDSR end - }
+
+	{ - EQ - }
+		{ ---- Custom EQ Low Slider ---- }
+		declare ui_slider $eqLow_sli(0, 1000000)
+		set_knob_defval($eqLow_sli,500000)
+		set_control_par_str(get_ui_id($eqLow_sli),$CONTROL_PAR_TEXT,"")
+		set_control_par_str(get_ui_id($eqLow_sli),$CONTROL_PAR_PICTURE,"series2_Low")
+		set_control_par(get_ui_id($eqLow_sli),$CONTROL_PAR_MOUSE_BEHAVIOUR,-500)
+		set_control_par(get_ui_id($eqLow_sli), $ENGINE_PAR_GAIN1, 1)
+		make_persistent($eqLow_sli)
+		read_persistent_var($eqLow_sli)
+
+		{ ---- Custom mid FREQ2 Slider ---- }
+		declare ui_slider $eqFreq2_sli(0, 1000000)
+		set_knob_defval($eqFreq2_sli,500000)
+		set_control_par_str(get_ui_id($eqFreq2_sli),$CONTROL_PAR_TEXT,"")
+		set_control_par_str(get_ui_id($eqFreq2_sli),$CONTROL_PAR_PICTURE,"series2_Mid-Freq")
+		set_control_par(get_ui_id($eqFreq2_sli),$CONTROL_PAR_MOUSE_BEHAVIOUR,-500)
+		set_control_par(get_ui_id($eqFreq2_sli), $ENGINE_PAR_FREQ2, 1)
+		make_persistent($eqFreq2_sli)
+		read_persistent_var($eqFreq2_sli)
+
+		{ ---- Custom EQ mid Slider ---- }
+		declare ui_slider $eqMid_sli(0, 1000000)
+		set_knob_defval($eqMid_sli,500000)
+		set_control_par_str(get_ui_id($eqMid_sli),$CONTROL_PAR_TEXT,"")
+		set_control_par_str(get_ui_id($eqMid_sli),$CONTROL_PAR_PICTURE,"series2_Mid")
+		set_control_par(get_ui_id($eqMid_sli),$CONTROL_PAR_MOUSE_BEHAVIOUR,-500)
+		set_control_par(get_ui_id($eqMid_sli), $ENGINE_PAR_GAIN2, 1)
+		make_persistent($eqMid_sli)
+		read_persistent_var($eqMid_sli)
+
+		{ ---- Custom EQ hi Slider ---- }
+		declare ui_slider $eqHi_sli(0, 1000000)
+		set_knob_defval($eqHi_sli,500000)
+		set_control_par_str(get_ui_id($eqHi_sli),$CONTROL_PAR_TEXT,"")
+		set_control_par_str(get_ui_id($eqHi_sli),$CONTROL_PAR_PICTURE,"series2_Hi")
+		set_control_par(get_ui_id($eqHi_sli),$CONTROL_PAR_MOUSE_BEHAVIOUR,-500)
+		set_control_par(get_ui_id($eqHi_sli), $ENGINE_PAR_GAIN3, 1)
+		make_persistent($eqHi_sli)
+		read_persistent_var($eqHi_sli)
+	{ - EQ end - }
+
+	{ - Cutoff Filter - }
+		{ ---- Custom Cutoff_LP Slider ---- }
+		declare ui_slider $Cutoff_LP_sli(0, 1000000)
+		set_control_par_str(get_ui_id($Cutoff_LP_sli),$CONTROL_PAR_AUTOMATION_NAME,"Cutoff_LP")
+		set_knob_defval($Cutoff_LP_sli,1000000)
+		set_control_par_str(get_ui_id($Cutoff_LP_sli),$CONTROL_PAR_TEXT,"")
+		set_control_par_str(get_ui_id($Cutoff_LP_sli),$CONTROL_PAR_PICTURE,"series7_cutoffLP_rp")
+		set_control_par(get_ui_id($Cutoff_LP_sli),$CONTROL_PAR_MOUSE_BEHAVIOUR,-400)
+		set_control_par(get_ui_id($Cutoff_LP_sli), $ENGINE_PAR_CUTOFF, 1)
+		make_persistent($Cutoff_LP_sli)
+		read_persistent_var($Cutoff_LP_sli)
+
+		{ ---- Custom Resonance Slider ---- }
+		declare ui_slider $resonance_sli(0, 1000000)
+		set_control_par_str(get_ui_id($resonance_sli),$CONTROL_PAR_AUTOMATION_NAME,"Resonance")
+		set_knob_defval($resonance_sli,500000)
+		set_control_par_str(get_ui_id($resonance_sli),$CONTROL_PAR_TEXT,"")
+		set_control_par_str(get_ui_id($resonance_sli),$CONTROL_PAR_PICTURE,"series7_resonance_rp")
+		set_control_par(get_ui_id($resonance_sli),$CONTROL_PAR_MOUSE_BEHAVIOUR,-400)
+		set_control_par(get_ui_id($resonance_sli), $ENGINE_PAR_RESONANCE, 1)
+		make_persistent($resonance_sli)
+		read_persistent_var($resonance_sli)
+	{ - Cutoff Filter end - }
+
+	{ - Tuning - }
+		{ ---- Custom Tuning Slider ---- }
+		declare ui_slider $tune_sli(490000, 510000)
+		set_control_par_str(get_ui_id($tune_sli),$CONTROL_PAR_AUTOMATION_NAME,"Tuning")
+		set_knob_defval($tune_sli,500000)
+		set_control_par_str(get_ui_id($tune_sli),$CONTROL_PAR_TEXT,"")
+		set_control_par_str(get_ui_id($tune_sli),$CONTROL_PAR_PICTURE,"series6_fine-tune_rp")
+		set_control_par(get_ui_id($tune_sli),$CONTROL_PAR_MOUSE_BEHAVIOUR,-400)
+		set_control_par(get_ui_id($tune_sli), $ENGINE_PAR_TUNE, 1)
+		make_persistent($tune_sli)
+		read_persistent_var($tune_sli)
+	{ - Tuning end - }
+
+	{ - Panning (sine/freq) - }
+		{ ---- Custom panSpeed Slider ---- }
+		declare ui_slider $panSpeed_sli(0, 1000000)
+		set_control_par_str(get_ui_id($panSpeed_sli),$CONTROL_PAR_AUTOMATION_NAME,"Pan-Speed")
+		set_knob_defval($panSpeed_sli,500000)
+		set_control_par_str(get_ui_id($panSpeed_sli),$CONTROL_PAR_TEXT,"")
+		set_control_par_str(get_ui_id($panSpeed_sli),$CONTROL_PAR_PICTURE,"series5_pan-speed_rp")
+		set_control_par(get_ui_id($panSpeed_sli),$CONTROL_PAR_MOUSE_BEHAVIOUR,-400)
+
+		$panSpeed_sli := get_engine_par($ENGINE_PAR_INTMOD_FREQUENCY,$grp_idx,$lfo_idx,-1)
+		set_control_par_str(get_ui_id($panSpeed_sli),$CONTROL_PAR_LABEL, get_engine_par_disp($ENGINE_PAR_INTMOD_FREQUENCY,$grp_idx,$lfo_idx,-1) & " Hz")
+
+		make_persistent($panSpeed_sli)
+		read_persistent_var($panSpeed_sli)
+
+		{ ---- Custom panDepth Slider ---- }
+		declare ui_slider $panDepth_sli(500000, 1000000)
+		set_control_par_str(get_ui_id($panDepth_sli),$CONTROL_PAR_AUTOMATION_NAME,"Pan-Depth")
+		set_knob_defval($panDepth_sli,0)
+		set_control_par_str(get_ui_id($panDepth_sli),$CONTROL_PAR_TEXT,"")
+		set_control_par_str(get_ui_id($panDepth_sli),$CONTROL_PAR_PICTURE,"series5_pan-depth_rp")
+		set_control_par(get_ui_id($panDepth_sli),$CONTROL_PAR_MOUSE_BEHAVIOUR,-400)
+
+		$panDepth_sli := get_engine_par($ENGINE_PAR_LFO_SINE,$grp_idx,$lfo_idx,-1)
+		set_control_par_str(get_ui_id($panDepth_sli),$CONTROL_PAR_LABEL, get_engine_par_disp($ENGINE_PAR_LFO_SINE,$grp_idx,$lfo_idx,-1) & " ")
+
+		make_persistent($panDepth_sli)
+		read_persistent_var($panDepth_sli)
+	{ - Panning (sine/freq) end - }
+
+	{ - chorus - }
+		{ ---- Chorus Switch ---- }
+	    declare ui_switch $ChorusSw
+		set_control_par_str(get_ui_id($ChorusSw),$CONTROL_PAR_TEXT,"")
+		set_control_par_str(get_ui_id($ChorusSw),$CONTROL_PAR_PICTURE,"series4_chorusSW_rp")
+	    make_persistent($ChorusSw)
+	    set_control_par(get_ui_id($ChorusSw), $CONTROL_PAR_HEIGHT, 64)
+		set_control_par(get_ui_id($ChorusSw), $CONTROL_PAR_WIDTH, 64)
+
+		{ ---- Custom Chorus Mix Slider ---- }
+		declare ui_slider $ChorusMix(0, 400000)
+		set_knob_defval($ChorusMix,0)
+		set_control_par_str(get_ui_id($ChorusMix),$CONTROL_PAR_TEXT,"")
+		set_control_par_str(get_ui_id($ChorusMix),$CONTROL_PAR_PICTURE,"series3_DelayWet")
+		set_control_par(get_ui_id($ChorusMix),$CONTROL_PAR_MOUSE_BEHAVIOUR,-500)
+		set_control_par(get_ui_id($ChorusMix), $ENGINE_PAR_SEND_EFFECT_OUTPUT_GAIN, 1)
+		make_persistent($ChorusMix)
+		read_persistent_var($ChorusMix)
+
+		{ ---- Custom Chorus Depth Slider ---- }
+		declare ui_slider $chDepth_sli(1000, 1000000)
+		set_knob_defval($chDepth_sli,0)
+		set_control_par_str(get_ui_id($chDepth_sli),$CONTROL_PAR_TEXT,"")
+		set_control_par_str(get_ui_id($chDepth_sli),$CONTROL_PAR_PICTURE,"series3_depth_rp")
+		set_control_par(get_ui_id($chDepth_sli),$CONTROL_PAR_MOUSE_BEHAVIOUR,-500)
+		set_control_par(get_ui_id($chDepth_sli), $ENGINE_PAR_CH_DEPTH, 1)
+		make_persistent($chDepth_sli)
+		read_persistent_var($chDepth_sli)
+
+		{ ---- Custom Chorus Speed Slider ---- }
+		declare ui_slider $chSpeed_sli(1000, 1000000)
+		set_knob_defval($chSpeed_sli,0)
+		set_control_par_str(get_ui_id($chSpeed_sli),$CONTROL_PAR_TEXT,"")
+		set_control_par_str(get_ui_id($chSpeed_sli),$CONTROL_PAR_PICTURE,"series3_speed_rp")
+		set_control_par(get_ui_id($chSpeed_sli),$CONTROL_PAR_MOUSE_BEHAVIOUR,-500)
+		set_control_par(get_ui_id($chSpeed_sli), $ENGINE_PAR_CH_SPEED, 1)
+		make_persistent($chSpeed_sli)
+		read_persistent_var($chSpeed_sli)
+	{ - chorus end - }
+
+	{ - delay - }
+		{ ---- Delay Switch ---- }
+	    declare ui_switch $delaySw
+		set_control_par_str(get_ui_id($delaySw),$CONTROL_PAR_TEXT,"")
+		set_control_par_str(get_ui_id($delaySw),$CONTROL_PAR_PICTURE,"series4_Delay_sw")
+	    make_persistent($delaySw)
+	    set_control_par(get_ui_id($delaySw), $CONTROL_PAR_HEIGHT, 64)
+		set_control_par(get_ui_id($delaySw), $CONTROL_PAR_WIDTH, 64)
+
+		{ ---- Custom Delay Mix Slider ---- }
+		declare ui_slider $delayMix(0, 600000)
+		set_knob_defval($delayMix,0)
+		set_control_par_str(get_ui_id($delayMix),$CONTROL_PAR_TEXT,"")
+		set_control_par_str(get_ui_id($delayMix),$CONTROL_PAR_PICTURE,"series3_DelayWet")
+		set_control_par(get_ui_id($delayMix),$CONTROL_PAR_MOUSE_BEHAVIOUR,-500)
+		set_control_par(get_ui_id($delayMix), $ENGINE_PAR_SEND_EFFECT_OUTPUT_GAIN, 1)
+		make_persistent($delayMix)
+		read_persistent_var($delayMix)
+
+		{ ---- Custom Delay Time Slider ---- }
+		declare ui_slider $dlTime_sli(1000, 1000000)
+		set_knob_defval($dlTime_sli,0)
+		set_control_par_str(get_ui_id($dlTime_sli),$CONTROL_PAR_TEXT,"")
+		set_control_par_str(get_ui_id($dlTime_sli),$CONTROL_PAR_PICTURE,"series3_DelayTime")
+		set_control_par(get_ui_id($dlTime_sli),$CONTROL_PAR_MOUSE_BEHAVIOUR,-500)
+		set_control_par(get_ui_id($dlTime_sli), $ENGINE_PAR_DL_TIME, 1)
+		make_persistent($dlTime_sli)
+		read_persistent_var($dlTime_sli)
+
+		{ ---- Custom Delay Time Slider ---- }
+		declare ui_slider $dlFback_sli(1000, 1000000)
+		set_knob_defval($dlFback_sli,0)
+		set_control_par_str(get_ui_id($dlFback_sli),$CONTROL_PAR_TEXT,"")
+		set_control_par_str(get_ui_id($dlFback_sli),$CONTROL_PAR_PICTURE,"series3_DelayFeedback")
+		set_control_par(get_ui_id($dlFback_sli),$CONTROL_PAR_MOUSE_BEHAVIOUR,-500)
+		set_control_par(get_ui_id($dlFback_sli), $ENGINE_PAR_DL_FEEDBACK, 1)
+		make_persistent($dlFback_sli)
+		read_persistent_var($dlFback_sli)
+	{ - delay end - }
+
+	{ - cabinet - }
+		{ ---- Cabinet Switch ---- }
+	    declare ui_switch $CabinetSw
+		set_control_par_str(get_ui_id($CabinetSw),$CONTROL_PAR_TEXT,"")
+		set_control_par_str(get_ui_id($CabinetSw),$CONTROL_PAR_PICTURE,"series4_cabSW_rp")
+	    make_persistent($CabinetSw)
+	    set_control_par(get_ui_id($CabinetSw), $CONTROL_PAR_HEIGHT, 48)
+		set_control_par(get_ui_id($CabinetSw), $CONTROL_PAR_WIDTH, 48)
+	{ - Cabinet end - }
+
+	{ - KOTOize - }
+		{ ---- Custom KOTOize Switch ---- }
+		declare ui_switch $KOTOizeSw
+		set_control_par_str(get_ui_id($KOTOizeSw),$CONTROL_PAR_TEXT,"")
+		set_control_par_str(get_ui_id($KOTOizeSw),$CONTROL_PAR_PICTURE,"series4_koto_izeSW_rp")
+	    make_persistent($KOTOizeSw)
+	    set_control_par(get_ui_id($KOTOizeSw), $CONTROL_PAR_HEIGHT, 48)
+		set_control_par(get_ui_id($KOTOizeSw), $CONTROL_PAR_WIDTH, 48)
+	{ - KOTOize end - }
+	
+	{ - stereo - }	
+		{ ---- stereo Switch ---- }
+	    declare ui_switch $StereoSw
+		set_control_par_str(get_ui_id($StereoSw),$CONTROL_PAR_TEXT,"")
+		set_control_par_str(get_ui_id($StereoSw),$CONTROL_PAR_PICTURE,"series4_stereoSW_rp")
+	    make_persistent($StereoSw)
+	    set_control_par(get_ui_id($StereoSw), $CONTROL_PAR_HEIGHT, 48)
+		set_control_par(get_ui_id($StereoSw), $CONTROL_PAR_WIDTH, 48)
+	{ - stereo end - }
+
+	{ - reverb - }
+		{ ---- Reverb Switch ---- }
+	    declare ui_switch $reverbSw
+		set_control_par_str(get_ui_id($reverbSw),$CONTROL_PAR_TEXT,"")
+		set_control_par_str(get_ui_id($reverbSw),$CONTROL_PAR_PICTURE,"series4_reverbSW_rp")
+	    make_persistent($reverbSw)
+	    set_control_par(get_ui_id($reverbSw), $CONTROL_PAR_HEIGHT, 64)
+		set_control_par(get_ui_id($reverbSw), $CONTROL_PAR_WIDTH, 64)
+
+		{ ---- Custom Reverb Mix Slider ---- }
+		declare ui_slider $reverbMix(0, 600000)
+		set_knob_defval($reverbMix,0)
+		set_control_par_str(get_ui_id($reverbMix),$CONTROL_PAR_TEXT,"")
+		set_control_par_str(get_ui_id($reverbMix),$CONTROL_PAR_PICTURE,"series3_DelayWet")
+		set_control_par(get_ui_id($reverbMix),$CONTROL_PAR_MOUSE_BEHAVIOUR,-500)
+		set_control_par(get_ui_id($reverbMix), $ENGINE_PAR_SEND_EFFECT_OUTPUT_GAIN, 1)
+		make_persistent($reverbMix)
+		read_persistent_var($reverbMix)
+
+		{ ---- Custom Reverb preDelay Slider ---- }
+		declare ui_slider $revPreDL_sli(1000, 1000000)
+		set_knob_defval($revPreDL_sli,0)
+		set_control_par_str(get_ui_id($revPreDL_sli),$CONTROL_PAR_TEXT,"")
+		set_control_par_str(get_ui_id($revPreDL_sli),$CONTROL_PAR_PICTURE,"series3_preDelay_rp")
+		set_control_par(get_ui_id($revPreDL_sli),$CONTROL_PAR_MOUSE_BEHAVIOUR,-500)
+		set_control_par(get_ui_id($revPreDL_sli), $ENGINE_PAR_IRC_PREDELAY, 1)
+		make_persistent($revPreDL_sli)
+		read_persistent_var($revPreDL_sli)
+
+		{ ---- Custom Reverb IR_Size Slider ---- }
+		declare ui_slider $IRsize_sli(1000, 1000000)
+		set_knob_defval($IRsize_sli,500000)
+		set_control_par_str(get_ui_id($IRsize_sli),$CONTROL_PAR_TEXT,"")
+		set_control_par_str(get_ui_id($IRsize_sli),$CONTROL_PAR_PICTURE,"series3_IRsize_rp")
+		set_control_par(get_ui_id($IRsize_sli),$CONTROL_PAR_MOUSE_BEHAVIOUR,-500)
+		set_control_par(get_ui_id($IRsize_sli), $ENGINE_PAR_IRC_LENGTH_RATIO_LR, 1)
+		make_persistent($IRsize_sli)
+		read_persistent_var($IRsize_sli)
+
+		{ ---- Custom Reverb lowPass Slider ---- }
+		declare ui_slider $IR_LP_sli(1000, 1000000)
+		set_knob_defval($IR_LP_sli,1000000)
+		set_control_par_str(get_ui_id($IR_LP_sli),$CONTROL_PAR_TEXT,"")
+		set_control_par_str(get_ui_id($IR_LP_sli),$CONTROL_PAR_PICTURE,"series3_IR-LP_rp")
+		set_control_par(get_ui_id($IR_LP_sli),$CONTROL_PAR_MOUSE_BEHAVIOUR,-500)
+		set_control_par(get_ui_id($IR_LP_sli), $ENGINE_PAR_IRC_FREQ_LOWPASS_LR, 1)
+		make_persistent($IR_LP_sli)
+		read_persistent_var($IR_LP_sli)
+	{ - reverb end - }
+
+	{ ---- glideMono ---- }
+	{ - thanks to NI user fizbin for sharing this}
+
+		declare const $pitch_change_interval := 100
+		declare $glide_on
+		declare $currentnote_id
+		declare $newnote_id
+		declare $oldnote1_id
+		declare $oldnote2_id
+		declare $oldnote3_id
+		declare $current_pitch
+		declare $target_pitch
+		declare $pitch_shift
+		declare $actual_glide
+		declare $interval_cents
+		declare polyphonic $this_id
+
+		declare ui_knob $Glide(1000, 1000000, 1000000)
+		declare ui_knob $Start (0, 1000000, 1000000)
+		declare ui_knob $Scaling(100, 200, 100)
+		declare ui_value_edit $Threshold(0, 127, 1)
+
+		declare ui_label $glideMono_label (3,1)
+		set_text ($glideMono_label,"glide Mono")
+		
+		$Glide := 120000
+		$Start := 5000 {only works in Sampler mode}
+		$Scaling := 125 { the first octave interval is twice the glide time of no interval,
+						the glide time for the 2nd octave interval is three times that of 
+						no interval and so forth}
+		$Threshold := 7 {Threshold is the interval at which scaling stops. If it is 7 (a fifth)
+		 				then the glide time is no longer increased once a fifth up or down is 
+		 				reached as the portamento interval.}
+
+		make_persistent ($Start)
+		make_persistent ($Glide)
+		make_persistent ($Scaling)
+		make_persistent ($Threshold)
+		
+	{ ---- glideMono end ---- }
+
+	{ ---- midiMonitor Display ---- }
+		declare !CC_names[128]
+		declare $count_midi
+		while ($count_midi < 128)
+			!CC_names[$count_midi] := "Not assigned"
+			inc ($count_midi)
+		end while
+
+		!CC_names[0] :=	"Bank Select"
+		!CC_names[1]:=	"Modulation Wheel"
+		!CC_names[2]:=	"Breath Controller"
+		!CC_names[4]:=	"Foot Pedal"
+		!CC_names[5]:=	"Portamento Time"                                              
+		!CC_names[6]:=	"Data Entry"
+		!CC_names[7]:=	"Volume"
+		!CC_names[8]:=	"Balance"
+		!CC_names[10]:=	"Pan Position"
+		!CC_names[11]:=	"Expression"
+		!CC_names[12]:=	"Effect Control 1"
+		!CC_names[13]:=	"Effect Control 2"
+		!CC_names[16]:=	"GeneralPurpose Slider 1"
+		!CC_names[17]:=	"General Purpose Slider 2"
+		!CC_names[18]:=	"General Purpose Slider 3"
+		!CC_names[19]:=	"General Purpose Slider 4"
+		
+		!CC_names[32]:=	"Bank Select fine"
+		!CC_names[33]:=	"Modulation Wheel fine"
+		!CC_names[34]:=	"Breath Controller fine"
+		!CC_names[36]:=	"Foot Pedal fine"
+		!CC_names[37]:=	"Portamento Time fine"
+		!CC_names[38]:=	"Data Entry fine"
+		!CC_names[39]:=	"Volume fine"
+		!CC_names[40]:=	"Balance fine"
+		!CC_names[42]:=	"Pan Position fine"
+		!CC_names[43]:=	"Expression fine"
+		!CC_names[44]:=	"Effect Control 1 fine"
+		!CC_names[45]:=	"Effect Control 2 fine"
+
+		!CC_names[64]:=	"Hold/Sustain Pedal"
+		!CC_names[65]:=	"Portamento Pedal"
+		!CC_names[66]:=	"Sostenuto Pedal"
+		!CC_names[67]:=	"Soft Pedal"
+		!CC_names[68]:=	"Legato Pedal"
+		!CC_names[69]:=	"Hold 2 Pedal"
+		!CC_names[70]:=	"Sound Variation"
+		!CC_names[71]:=	"Sound Timbre"
+		!CC_names[72]:=	"Sound Release Time"
+		!CC_names[73]:=	"Sound Attack Time"
+		!CC_names[74]:=	"Sound Brightness"
+		!CC_names[75]:=	"Sound Decay Time"
+		!CC_names[76]:=	"Sound Control 7"
+		!CC_names[77]:=	"Sound Control 8"
+		!CC_names[78]:=	"Sound Control 9"
+		!CC_names[79]:=	"Sound Control 10"
+		!CC_names[80]:=	"General Purpose Button 1"
+		!CC_names[81]:=	"General Purpose Button 2"
+		!CC_names[82]:=	"General Purpose Button 3"
+		!CC_names[83]:=	"General Purpose Button 4"
+		!CC_names[91]:=	"Reverb Level"
+		!CC_names[92]:=	"Tremolo Level"
+		!CC_names[93]:=	"Chorus Level"
+		!CC_names[94]:=	"Celeste Level"
+		!CC_names[95]:=	"Phaser Level"
+		!CC_names[96]:=	"Data Button inc"
+		!CC_names[97]:=	"Data Button dec"
+		!CC_names[98]:=	"NRPN fine"
+		!CC_names[99]:=	"NRPN coarse"
+		!CC_names[100]:= "RPN fine"
+		!CC_names[101]:= "RPN coarse"
+		!CC_names[120]:= "All Sound Off"
+		!CC_names[121]:= "All Controllers Off"
+		!CC_names[122]:= "Local Keyboard"
+		!CC_names[123]:= "All Notes Off"
+		!CC_names[124]:= "Omni Mode Off"
+		!CC_names[125]:= "Omni Mode On"
+		!CC_names[126]:= "Mono Operation"
+		!CC_names[127]:= "Poly Operation"
+		
+		declare !note_names[12]
+		!note_names[0] := "C"
+		!note_names[1] := "Db"
+		!note_names[2] := "D"
+		!note_names[3] := "Eb"
+		!note_names[4] := "E"
+		!note_names[5] := "F"
+		!note_names[6] := "Gb"
+		!note_names[7] := "G"
+		!note_names[8] := "Ab"
+		!note_names[9] := "A"
+		!note_names[10] := "Bb"
+		!note_names[11] := "B"
+
+		declare ui_switch $Note_On
+		set_text ($Note_On,"Note On")
+		
+		declare ui_switch $Note_Off
+		set_text($Note_Off,"Note Off")
+		
+		declare ui_switch $controller_button
+		set_text ($controller_button,"Controller")
+		
+		declare ui_switch $pbend_button
+		set_text ($pbend_button,"Pitchbend")
+		
+		declare ui_switch $Velocity
+		declare ui_switch $rpn_nrpn
+		set_text($rpn_nrpn,"RPN/NRPN")
+		
+		declare ui_switch $pressure_button
+		set_text($pressure_button,"Channel Pressure")
+		
+		declare ui_switch $clear_button
+		set_text($clear_button,"Clear Display")
+		declare ui_switch $verbose_button
+		set_text($verbose_button,"Verbose Mode")
+		
+		declare ui_label $display (3,6)
+		declare ui_label $label (2,1)
+		
+		declare ui_label $display_label (3,1)
+		set_text ($display_label,"MIDI Monitor Display")
+		set_control_par(get_ui_id($display_label),$CONTROL_PAR_TEXT_ALIGNMENT,1)
+		
+		set_text ($display, "")
+		set_text ($label, "Choose what MIDI events to monitor")
+		
+		$Note_On := 1
+		$Velocity := 1
+		$pbend_button := 1
+		$controller_button := 1
+		$rpn_nrpn := 0
+		
+		make_persistent ($Note_On)
+		make_persistent ($Velocity)
+		make_persistent ($controller_button)
+		make_persistent ($pbend_button)
+		make_persistent ($Note_Off)
+		make_persistent ($verbose_button)
+		make_persistent ($rpn_nrpn)
+		make_persistent ($pressure_button)
+		
+			
+		set_control_help ($Note_On,"Note On: If selected, the note numbers of incoming MIDI note on messages will be displayed.")
+		set_control_help ($Velocity,"Velocity: If selected, the velocities of incoming MIDI note on messages will be displayed.")
+		set_control_help ($controller_button, "Controller: If selected, incoming MIDI CC messages will be displayed.")
+		set_control_help ($pbend_button, "Pitchbend: If selected, incoming MIDI pitchbend messages will be displayed.")
+		set_control_help ($Note_Off,"Note Off: If selected, the note number of incoming MIDI note off messages will be displayed.")
+		
+		set_control_help ($verbose_button,"Verbose: Turns on Verbose Mode for the MIDI monitor display., Each MIDI message will be displayed on a separate line.")
+		set_control_help ($rpn_nrpn,"RPN/NRPN: If selected, incoming MIDI RPN and NRPN messages will be displayed.")
+		set_control_help ($pressure_button,"Channel Pressure: If selected, incoming MIDI Channel Pressure messages will be displayed.")
+		set_control_help ($clear_button,"Clear: Clears the MIDI Monitor display.")
+		set_control_help ($display,"The MIDI monitor display.")
+
+	{ ---- midiMonitor Display end ---- }
+	
+
+
+	{ ---- GUI.main_master ---- }
+		move_control_px($preset_label, 120, 10)
+			set_control_par(get_ui_id($preset_label),$CONTROL_PAR_WIDTH,290)
+			set_control_par(get_ui_id($preset_label),$CONTROL_PAR_FONT_TYPE, 17)
+			set_control_par(get_ui_id($preset_label),$CONTROL_PAR_TEXT_ALIGNMENT,1)
+		move_control_px($selected_group, 220, 30)
+
+		move_control_px($tune_sli, 495, 42)
+
+		move_control_px($Cutoff_LP_sli, 430, 10)
+		move_control_px($resonance_sli, 430, 75)
+
+		move_control_px($panSpeed_sli, 560, 10)
+		move_control_px($panDepth_sli, 560, 75)	
+
+		move_control_px($Attack_sli, 5, 250)
+		move_control_px($Hold_sli, 30, 285)
+		move_control_px($Decay_sli, 5, 320)
+		move_control_px($Sustain_sli, 30, 355)
+		move_control_px($Release_sli, 5, 390)
+
+		move_control_px($eqLow_sli, 10, 190)
+		move_control_px($eqFreq2_sli, 10, 70)
+		move_control_px($eqMid_sli, 10, 130)
+		move_control_px($eqHi_sli, 10, 10)
+
+		move_control_px($ChorusSw, 540, 150)
+		move_control_px($ChorusMix,450, 150)
+		move_control_px($chDepth_sli, 540, 225)
+		move_control_px($chSpeed_sli, 450, 225)
+
+		move_control_px($delaySw, 540, 300)
+		move_control_px($delayMix,450, 300)
+		move_control_px($dlTime_sli, 450, 375)
+		move_control_px($dlFback_sli, 540, 375)
+
+		move_control_px($StereoSw, 560, 450)
+		
+		move_control_px($CabinetSw, 445, 450)
+
+		move_control_px($KOTOizeSw, 502, 450)
+
+		move_control_px($reverbSw, 10, 450)
+		move_control_px($reverbMix, 95, 450)
+		move_control_px($revPreDL_sli, 180, 450)
+		move_control_px($IRsize_sli, 265, 450)
+		move_control_px($IR_LP_sli, 350, 450)
+
+		{ - GUI glideMono - }
+		move_control_px($glideMono_label,120,280)
+		set_control_par(get_ui_id($glideMono_label),$CONTROL_PAR_WIDTH,290)
+		set_control_par(get_ui_id($glideMono_label),$CONTROL_PAR_FONT_TYPE, 17)
+		set_control_par(get_ui_id($glideMono_label),$CONTROL_PAR_TEXT_ALIGNMENT,1)
+
+		move_control_px($Glide, 120, 300)
+		move_control_px($Start, 220, 300)
+		move_control_px($Scaling, 320, 300)
+		move_control_px($Threshold, 210000, 360000)
+
+		{ - GUI midiMonitor display - }
+			move_control_px($display_label,120,70)
+			set_control_par(get_ui_id($display_label),$CONTROL_PAR_WIDTH,290)
+			set_control_par(get_ui_id($display_label),$CONTROL_PAR_FONT_TYPE, 17)
+			set_control_par(get_ui_id($display_label),$CONTROL_PAR_TEXT_ALIGNMENT,1)
+
+			move_control_px($display,120,90)
+			set_control_par(get_ui_id($display),$CONTROL_PAR_WIDTH,290)
+	        set_control_par(get_ui_id($display),$CONTROL_PAR_HEIGHT,150)
+	        { set_control_par(get_ui_id($display),$CONTROL_PAR_BAR_COLOR,99CE9FFh) } {HEX colors; place in b/w <9______h>}
+	        set_control_par(get_ui_id($display),$CONTROL_PAR_TEXT_ALIGNMENT,1)
+			set_control_par(get_ui_id($display),$CONTROL_PAR_FONT_TYPE, 17)
+			set_control_par(get_ui_id($display), $CONTROL_PAR_HIDE, $HIDE_PART_BG)
+
+			move_control_px($clear_button,280,250)
+			move_control_px($verbose_button,160,250)
+			
+			move_control_px($label,120000,1000)
+			move_control_px($Note_On,5000,3000)
+			move_control_px($Velocity,6000,3000)
+			move_control_px($controller_button,5000,4000)
+			move_control_px($pbend_button,6000,4000)
+			move_control_px($Note_Off,5000,5000)
+			move_control_px($rpn_nrpn,2100,2000)
+			move_control_px($pressure_button,6000,5000)
+
+
+	{ ---- message ---- }
+	message("Hope you are enjoying the instruments! Have fun, spread the <3 - Ruslan")
+
+
+end on
+
+	{ - AHDSR - }
+		{ ---- Change Custom Attack Slider---- }
+		on ui_control ($Attack_sli) 
+			set_engine_par($ENGINE_PAR_ATTACK,$Attack_sli,$grp_idx,$env_idx,-1)
+			set_control_par_str(get_ui_id($Attack_sli),$CONTROL_PAR_LABEL, get_engine_par_disp($ENGINE_PAR_ATTACK,$grp_idx,$env_idx,-1) & " ms")
+		end on
+
+		{ ---- Change Custom Hold Slider---- }
+		on ui_control ($Hold_sli) 
+			set_engine_par($ENGINE_PAR_HOLD,$Hold_sli,$grp_idx,$env_idx,-1)
+			set_control_par_str(get_ui_id($Hold_sli),$CONTROL_PAR_LABEL, get_engine_par_disp($ENGINE_PAR_HOLD,$grp_idx,$env_idx,-1) & " ms")
+		end on
+
+		{ ---- Change Custom Decay Slider---- }
+		on ui_control ($Decay_sli) 
+			set_engine_par($ENGINE_PAR_DECAY,$Decay_sli,$grp_idx,$env_idx,-1)
+			set_control_par_str(get_ui_id($Decay_sli),$CONTROL_PAR_LABEL, get_engine_par_disp($ENGINE_PAR_DECAY,$grp_idx,$env_idx,-1) & " ms")
+		end on
+
+		{ ---- Change Custom Sustain Slider---- }
+		on ui_control ($Sustain_sli) 
+			set_engine_par($ENGINE_PAR_SUSTAIN,$Sustain_sli,$grp_idx,$env_idx,-1)
+			set_control_par_str(get_ui_id($Sustain_sli),$CONTROL_PAR_LABEL, get_engine_par_disp($ENGINE_PAR_SUSTAIN,$grp_idx,$env_idx,-1) & " dB")
+		end on	
+
+		{ ---- Change Custom Release Slider---- }
+		on ui_control ($Release_sli) 
+			set_engine_par($ENGINE_PAR_RELEASE,$Release_sli,$grp_idx,$env_idx,-1)
+			set_control_par_str(get_ui_id($Release_sli),$CONTROL_PAR_LABEL, get_engine_par_disp($ENGINE_PAR_RELEASE,$grp_idx,$env_idx,-1) & " ms")
+		end on
+	{ - AHDSR end - }
+
+	{ - EQ - }
+		{ ---- Change low-EQ Slider---- }
+		on ui_control ($eqLow_sli)
+			set_engine_par($ENGINE_PAR_GAIN1, $eqLow_sli, $grp_idx, 0, -1)
+		end on
+
+		{ ---- Change mid-EQ FREQ2 Slider---- }
+		on ui_control ($eqFREQ2_sli)
+			set_engine_par($ENGINE_PAR_FREQ2, $eqFREQ2_sli, $grp_idx, 0, -1)
+		end on
+
+		{ ---- Change mid-EQ Slider---- }
+		on ui_control ($eqMid_sli)
+			set_engine_par($ENGINE_PAR_GAIN2, $eqMid_sli, $grp_idx, 0, -1)
+		end on
+
+		{ ---- Change hi-EQ Slider---- }
+		on ui_control ($eqHi_sli)
+			set_engine_par($ENGINE_PAR_GAIN3, $eqHi_sli, $grp_idx, 0, -1)
+		end on
+	{ - EQ end - }
+
+	{ - Cutoff_LP - }
+		{ ---- Change Custom Cutoff_LP Slider---- }
+		on ui_control ($Cutoff_LP_sli)
+			set_engine_par($ENGINE_PAR_CUTOFF, $Cutoff_LP_sli, -1, 6, 1)
+		end on
+
+		{ ---- Change Custom Resonance Slider---- }
+		on ui_control ($resonance_sli)
+			set_engine_par($ENGINE_PAR_RESONANCE, $resonance_sli, -1, 6, 1)
+		end on
+	{ - Cutoff_LP end - }
+
+	{ - tuning - }
+		{ ---- Change Custom Tuning Slider ---- }
+		on ui_control ($tune_sli)
+			set_engine_par($ENGINE_PAR_TUNE, $tune_sli, $grp_idx, -1, -1)
+
+		end on
+	{ - tuning end - }
+
+	{ - Panning (sine/freq) - }	
+		{ ---- Change Custom panSpeed Slider ---- }
+		on ui_control ($panSpeed_sli) 
+			set_engine_par($ENGINE_PAR_INTMOD_FREQUENCY,$panSpeed_sli,$grp_idx,$lfo_idx,-1)
+			set_control_par_str(get_ui_id($panSpeed_sli),$CONTROL_PAR_LABEL, get_engine_par_disp($ENGINE_PAR_INTMOD_FREQUENCY,$grp_idx,$lfo_idx,-1) & " Hz")
+		end on
+
+		{ ---- Change Custom panDepth Slider ---- }
+		on ui_control ($panDepth_sli) 
+			set_engine_par($ENGINE_PAR_LFO_SINE,$panDepth_sli,$grp_idx,$lfo_idx,-1)
+			set_control_par_str(get_ui_id($panDepth_sli),$CONTROL_PAR_LABEL, get_engine_par_disp($ENGINE_PAR_LFO_SINE,$grp_idx,$lfo_idx,-1) & " ")
+		end on
+	{ - Panning (sine/freq) end - }
+
+	{ - chorus - }
+		{ ---- On/Off Chorus Switch ---- }
+		on ui_control ($ChorusSw)
+		    set_engine_par($ENGINE_PAR_EFFECT_BYPASS,1 - $ChorusSw,-1,2,1)
+		end on
+
+		{ ---- Change Custom Chorus Mix Slider---- }
+		on ui_control ($ChorusMix)
+			set_engine_par($ENGINE_PAR_SEND_EFFECT_OUTPUT_GAIN, $ChorusMix, -1, 2, 1)
+		end on
+
+		{ ---- Change Custom Chorus Depth Slider---- }
+		on ui_control ($chDepth_sli)
+			set_engine_par($ENGINE_PAR_CH_DEPTH, $chDepth_sli, -1, 2, 1)
+		end on
+
+		{ ---- Change Custom Chorus Speed Slider---- }
+		on ui_control ($chSpeed_sli)
+			set_engine_par($ENGINE_PAR_CH_SPEED, $chSpeed_sli, -1, 2, 1)
+		end on
+	{ - chorus end - }
+
+	{ - delay - }
+		{ ---- On/Off Delay Switch ---- }
+		on ui_control ($delaySw)
+		    set_engine_par($ENGINE_PAR_SEND_EFFECT_BYPASS,1 - $delaySw,-1,6,0)
+		end on
+
+		{ ---- Change Custom Delay Mix Slider---- }
+		on ui_control ($delayMix)
+			set_engine_par($ENGINE_PAR_SEND_EFFECT_OUTPUT_GAIN, $delayMix, -1, 6, 0)
+		end on
+
+		{ ---- Change Custom Delay Time Slider---- }
+		on ui_control ($dlTime_sli)
+			set_engine_par($ENGINE_PAR_DL_TIME, $dlTime_sli, -1, 6, 0)
+		end on
+
+		{ ---- Change Custom Delay Feedback Slider---- }
+		on ui_control ($dlFback_sli)
+			set_engine_par($ENGINE_PAR_DL_FEEDBACK, $dlFback_sli, -1, 6, 0)
+		end on
+	{ - delay end - }
+
+	{ - cabinet - }
+		{ ---- On/Off Cabinet Switch ---- }
+		on ui_control ($CabinetSw)
+		    set_engine_par($ENGINE_PAR_EFFECT_BYPASS,1 - $CabinetSw,-1,1,1)
+		end on
+	{ - cabinet end - }
+
+	{ - KOTOize - }
+		{ ---- On/Off KOTOize Switch ---- }
+		on ui_control ($KOTOizeSw)
+		    set_engine_par($ENGINE_PAR_EFFECT_BYPASS,1 - $KOTOizeSw, $grp_idx,3,-1)
+		end on
+	{ - KOTOize end - }
+
+	{ - stereo - }
+		{ ---- On/Off Stereo Switch ---- }
+		on ui_control ($StereoSw)
+		    set_engine_par($ENGINE_PAR_EFFECT_BYPASS,1 - $StereoSw,-1,3,1)
+		end on
+	{ - stereo end - }
+
+	{ - reverb - }
+		{ ---- On/Off Reverb Switch ---- }
+		on ui_control ($reverbSw)
+		    set_engine_par($ENGINE_PAR_SEND_EFFECT_BYPASS,1 - $reverbSw,-1,7,0)
+		end on
+
+		{ ---- Change Custom Reverb Mix Slider---- }
+		on ui_control ($reverbMix)
+			set_engine_par($ENGINE_PAR_SEND_EFFECT_OUTPUT_GAIN, $reverbMix, -1, 7, 0)
+		end on
+
+		{ ---- Change Custom Reverb preDelay Slider---- }
+		on ui_control ($revPreDL_sli)
+			set_engine_par($ENGINE_PAR_IRC_PREDELAY, $revPreDL_sli, -1, 7, 0)
+		end on
+
+		{ ---- Change Custom Reverb IR_Size Slider---- }
+		on ui_control ($IRsize_sli)
+			set_engine_par($ENGINE_PAR_IRC_LENGTH_RATIO_LR, $IRsize_sli, -1, 7, 0)
+		end on
+
+		{ ---- Change Custom Reverb lowPass Slider---- }
+		on ui_control ($IR_LP_sli)
+			set_engine_par($ENGINE_PAR_IRC_FREQ_LOWPASS_LR, $IR_LP_sli, -1, 7, 0)
+		end on
+	{ - reverb end - }
+
+	{ - glideMono - }
+		on note
+			select ($EVENT_VELOCITY)
+				case 1 to 127
+				set_key_color($EVENT_NOTE,$KEY_COLOR_WHITE)
+			end select
+
+			{ - MENU group presets Select - }
+				disallow_group($ALL_GROUPS)
+				allow_group($selected_group)
+				$grp_idx := $selected_group
+			{ - MENU group presets Select end - }
+
+
+			{ - midiMonitor - }
+				if ($verbose_button = 0)
+				if ($Note_On = 1)
+					set_text ($display, "Note On: " & !note_names[$EVENT_NOTE mod 12] & ($EVENT_NOTE / 12) - 2 & "  (" & $EVENT_NOTE & ")")
+				end if
+
+				if ($Velocity = 1)
+					set_text ($display, "Velocity: " & $EVENT_VELOCITY)
+				end if
+
+				if ($Note_On = 1 and $Velocity = 1)
+					set_text ($display, "Note On: " & !note_names[$EVENT_NOTE mod 12] & ($EVENT_NOTE / 12) - 2 & "  (" & $EVENT_NOTE & ")")
+					add_text_line ($display, "Velocity: " & $EVENT_VELOCITY)
+				end if
+				else
+				{-------Verbose Mode---------}
+				if ($Note_On = 1 and $Velocity = 0)
+					add_text_line ($display, "Note On: " & !note_names[$EVENT_NOTE mod 12] & ($EVENT_NOTE / 12) - 2 & "  (" & $EVENT_NOTE & ")")
+				end if
+
+				if ($Velocity = 1 and $Note_On = 0)
+					add_text_line ($display, "Velocity: " & $EVENT_VELOCITY)
+				end if
+
+				if ($Note_On = 1 and $Velocity = 1)
+					add_text_line ($display, "Note On: " & !note_names[$EVENT_NOTE mod 12] & ($EVENT_NOTE / 12) - 2 & "  (" & $EVENT_NOTE & ")" & "   Velocity: " & $EVENT_VELOCITY)
+				end if
+				end if
+
+			{ - midiMonitor end - }
+
+
+			if ($glide_on = 1)
+				ignore_event($EVENT_ID)
+				$newnote_id := play_note($EVENT_NOTE, $EVENT_VELOCITY, $Start, -1)
+				$this_id := $newnote_id
+				change_tune($newnote_id,$current_pitch - ($EVENT_NOTE*100000), 0)
+				$target_pitch := $EVENT_NOTE * 100000
+				$interval_cents := abs($target_pitch/1000 - $current_pitch/1000)
+				if ($interval_cents > $Threshold * 100)
+					$interval_cents := $Threshold * 100
+				end if
+				$actual_glide := $Glide + ($Glide * $interval_cents / 1200 * ($Scaling - 100) / 100)
+
+				fade_out($newnote_id, 0, 1)
+				fade_in ($newnote_id,$actual_glide)
+				fade_out($currentnote_id, $actual_glide, 1)
+
+				note_off($oldnote3_id)
+				$oldnote3_id := $oldnote2_id
+				$oldnote2_id := $oldnote1_id
+				$oldnote1_id := $currentnote_id
+				$currentnote_id := $newnote_id
+
+				$pitch_shift := ($target_pitch - $current_pitch) / ($actual_glide / $pitch_change_interval)
+				wait($pitch_change_interval)
+				while(abs($target_pitch - $current_pitch) > abs($pitch_shift))
+					if ($currentnote_id = $this_id)
+						change_tune($currentnote_id, $pitch_shift, 1)
+						change_tune($oldnote1_id, $pitch_shift, 1)
+						change_tune($oldnote2_id, $pitch_shift, 1)
+						change_tune($oldnote3_id, $pitch_shift, 1)
+						$current_pitch := $current_pitch + $pitch_shift
+						wait($pitch_change_interval)
+					else
+						exit
+					end if
+				end while 
+				if ($currentnote_id = $this_id)
+					$pitch_shift := $target_pitch - $current_pitch
+					change_tune($currentnote_id, $pitch_shift, 1)
+					change_tune($oldnote1_id, $pitch_shift, 1)
+					change_tune($oldnote2_id, $pitch_shift, 1)
+					change_tune($oldnote3_id, $pitch_shift, 1)
+					$current_pitch := $target_pitch
+				end if
+			else
+				$currentnote_id := $EVENT_ID
+				$current_pitch := $EVENT_NOTE * 100000
+				$glide_on := 1
+			end if
+		end on
+
+		on release
+			set_key_color($EVENT_NOTE,$KEY_COLOR_BLACK)
+			
+			{ - midiMonitor - }
+			if ($verbose_button = 0)
+				if ($Note_Off = 1)
+					set_text ($display, "Note Off: " & !note_names[$EVENT_NOTE mod 12]  & ($EVENT_NOTE / 12) - 2 & "  (" & $EVENT_NOTE & ")")
+				end if
+				else
+				{----- Verbose Mode -----}
+				if ($Note_Off = 1)
+					add_text_line ($display, "Note Off: " & !note_names[$EVENT_NOTE mod 12] & ($EVENT_NOTE / 12) - 2 & "  (" & $EVENT_NOTE & ")")
+				end if
+			end if
+
+			{ - midiMonitor end - }
+
+
+			if($EVENT_ID = $currentnote_id)
+				$glide_on := 0
+				note_off($oldnote3_id)
+				note_off($oldnote2_id)
+				note_off($oldnote1_id)
+				$current_pitch := $target_pitch
+			end if
+			if ($glide_on = 1 and $EVENT_ID # $oldnote3_id)
+				ignore_event($EVENT_ID)
+				wait($Glide)
+				note_off($EVENT_ID)
+			end if
+			
+		end on
+		
+
+	{ - glideMono end - }
+
+	{ - midiMonitor Display - }
+		on ui_control ($clear_button)
+			$clear_button := 0
+			set_text ($display, "")
+		end on
+		on ui_control ($verbose_button)
+			set_text ($display, "")
+		end on
+
+		on rpn
+			if ($verbose_button = 0)
+				if ($rpn_nrpn = 1)
+					select ($RPN_ADDRESS)
+						case 0
+							set_text ($display,"RPN: " & $RPN_ADDRESS  & "   (Pitch Bend Sensitivity)")
+						case 1
+							set_text ($display,"RPN: " & $RPN_ADDRESS & "   (Fine Tuning)")
+						case 2
+							set_text ($display,"RPN: " & $RPN_ADDRESS  & "   (Coarse Tuning)")
+						case 3 to 16383
+							set_text ($display,"RPN: " & $RPN_ADDRESS)
+						end select
+						add_text_line ($display, "Value: " & $RPN_VALUE)
+				end if
+			else
+			{----- Verbose Mode -----}
+				if ($rpn_nrpn = 1)
+					add_text_line ($display,"RPN " & $RPN_ADDRESS & "   Value: " & $RPN_VALUE)
+				end if
+			end if
+		end on
+		on nrpn
+			if ($verbose_button = 0)
+				if ($rpn_nrpn = 1)
+					set_text ($display,"NRPN: " & $RPN_ADDRESS)
+					add_text_line ($display, "Value: " & $RPN_VALUE)
+				end if
+			else
+			{----- Verbose Mode -----}
+				if ($rpn_nrpn = 1)
+					add_text_line ($display,"NRPN " & $RPN_ADDRESS & "   Value: " & $RPN_VALUE)
+				end if
+			end if
+		end on
+	{ - midiMonitor Display end - }
+
+
+	{function lock_script(ui_height, status)
+
+		declare lock
+		make_persistent(lock)
+		read_persistent_var(lock)
+
+		declare ui_slider sli_noopen(0, 1)
+		sli_noopen -> PICTURE := "lock"
+		sli_noopen -> POS_X := 0
+		sli_noopen -> ALLOW_AUTOMATION := 0
+
+		if (in_range(ui_height, 54, 540))
+			sli_noopen -> POS_Y := ui_height-20
+		else
+			sli_noopen -> POS_Y := 34
+		end if
+
+		sli_noopen -> HIDE := HIDE_WHOLE_CONTROL
+
+		if (status = 0)
+			lock := 0
+		else
+			if (lock < 1)
+				inc(lock)
+			else
+				sli_noopen -> HIDE := HIDE_PART_NOTHING
+			end if
+		end if
+
+	end function}
+
+
+{---------------Extra----------------}
+
+{ set_knob_label($eqGainLow, get_engine_par_disp($ENGINE_PAR_GAIN1, 0, 0, -1)) }
+	{PAR_1: -1 for insert fx, 0 for groupInsert} {PAR_2: index of fx pos} {PAR_3: 1 for insert fx, 0 for send}
+	
+	{remember to CHANGE/UPDATE the control we're changing}
+
+{ ----------------------------------------------------------------------------------------- }
+{ - workspace - }
+
+
+
+
+
+
+
+
+
+
+
+
+
+{END OF SCRIPT}
