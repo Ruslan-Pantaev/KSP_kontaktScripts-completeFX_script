@@ -1,0 +1,27 @@
+on init
+  set_ui_height_px(200)
+  declare $_lock
+  declare ui_slider $_sli_noopen(0, 1) 
+  make_persistent($_lock)
+  read_persistent_var($_lock)
+  set_control_par_str(get_ui_id($_sli_noopen),$CONTROL_PAR_PICTURE,"lock")
+  set_control_par(get_ui_id($_sli_noopen),$CONTROL_PAR_POS_X,0)
+  set_control_par(get_ui_id($_sli_noopen),$CONTROL_PAR_ALLOW_AUTOMATION,0)
+  if (in_range(200,54,540))
+    set_control_par(get_ui_id($_sli_noopen),$CONTROL_PAR_POS_Y,200-20)
+  else
+    set_control_par(get_ui_id($_sli_noopen),$CONTROL_PAR_POS_Y,34)
+  end if
+  set_control_par(get_ui_id($_sli_noopen),$CONTROL_PAR_HIDE,$HIDE_WHOLE_CONTROL)
+  if (1=0)
+    $_lock := 0
+  else
+    if ($_lock<1)
+      inc($_lock)
+    else
+      set_control_par(get_ui_id($_sli_noopen),$CONTROL_PAR_HIDE,$HIDE_PART_NOTHING)
+    end if
+  end if
+  message(" ")
+end on
+

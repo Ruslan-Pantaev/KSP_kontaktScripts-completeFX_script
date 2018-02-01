@@ -1,0 +1,46 @@
+{*
+*	Author: Ruslan Pantaev
+*		(Thanks to David Healy of Xtant Audio!)
+*	GNU Public License
+*	January 5, 2017
+*}
+
+
+on init
+	set_ui_height_px(200)
+	
+	lock_script(200, 1)
+
+	message(" ")
+end on
+
+	function lock_script(ui_height, status)
+
+		declare lock
+		make_persistent(lock)
+		read_persistent_var(lock)
+
+		declare ui_slider sli_noopen(0, 1)
+		sli_noopen -> PICTURE := "lock"
+		sli_noopen -> POS_X := 0
+		sli_noopen -> ALLOW_AUTOMATION := 0
+
+		if (in_range(ui_height, 54, 540))
+			sli_noopen -> POS_Y := ui_height-20
+		else
+			sli_noopen -> POS_Y := 34
+		end if
+
+		sli_noopen -> HIDE := HIDE_WHOLE_CONTROL
+
+		if (status = 0)
+			lock := 0
+		else
+			if (lock < 1)
+				inc(lock)
+			else
+				sli_noopen -> HIDE := HIDE_PART_NOTHING
+			end if
+		end if
+
+	end function
